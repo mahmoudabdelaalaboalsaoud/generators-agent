@@ -18,7 +18,7 @@ export default function Home() {
 function Login() {
   const [e, setE] = useState(''), [p, setP] = useState(''), [m, setM] = useState('')
   const go = async up => {
-    const { error } = up ? await sb.auth.signUp({ email: e, password: p }) : await sb.auth.signInWithPassword({ email: e, password: p })
+    const { error } = up ? await sb.auth.signUp({ email: e, password: p, options: { emailRedirectTo: location.origin } }) : await sb.auth.signInWithPassword({ email: e, password: p })
     setM(error ? error.message : up ? 'اتبعتلك إيميل تأكيد، افتحه وبعدين ادخل' : '')
   }
   return (
