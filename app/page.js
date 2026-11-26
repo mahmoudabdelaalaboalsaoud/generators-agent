@@ -69,8 +69,8 @@ function Chat({ s }) {
       {msgs.map((m, i) => {
         const urls = m.role === 'user' ? m.images : (m.content.match(/https?:\/\/\S+\.(jpg|jpeg|png|webp)/gi) || [])
         return (
-          <div key={i} style={{ background: m.role === 'user' ? '#d1fae5' : '#fff', padding: 10, borderRadius: 10, margin: '8px 0', whiteSpace: 'pre-wrap' }}>
-            {m.content}
+          <div key={i} style={{ background: m.role === 'user' ? '#d1fae5' : '#fff', padding: 10, borderRadius: 10, margin: '8px 0', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+            {m.role === "user" ? m.content : m.content.replace(/https?:\/\/\S+\.(jpg|jpeg|png|webp)/gi, "")}
             <div>{urls.map(u => <img key={u} src={u} style={{ width: 110, height: 110, objectFit: 'cover', borderRadius: 8, margin: 4 }} />)}</div>
           </div>
         )
