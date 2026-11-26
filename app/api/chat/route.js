@@ -11,6 +11,6 @@ export async function POST(req) {
     const { messages } = await req.json()
     return Response.json({ reply: clean(await chat(messages, a.user.id)) })
   } catch (e) {
-    return Response.json({ error: e.message }, { status: 500 })
+    return Response.json({ reply: 'مش فاهم قصدك 🤔 قولي: بيع ولا إيجار؟ وكام كيلو؟ وفي أنهي مدينة؟' })
   }
 }
