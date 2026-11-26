@@ -1,8 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { sb } from '../lib/supabase'
-const btn = { padding: '10px 14px', border: 0, borderRadius: 8, background: '#0b6e4f', color: '#fff', fontSize: 16 }
-const inp = { padding: 10, fontSize: 16, borderRadius: 8, border: '1px solid #ccc', width: '100%', boxSizing: 'border-box', marginBottom: 8 }
+import Gallery from './Gallery'
 
 export default function Home() {
   const [s, setS] = useState(null), [ready, setReady] = useState(false)
@@ -22,26 +21,27 @@ function Login() {
     setM(error ? error.message : up ? 'اتبعتلك إيميل تأكيد، افتحه وبعدين ادخل' : '')
   }
   return (
-    <div style={{ maxWidth: 380, margin: '60px auto', padding: 16 }}>
-      <h2>⚡ وكيل المولدات</h2>
-      <button style={{ ...btn, width: '100%', marginBottom: 12, background: '#db4437' }} onClick={() => sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin } })}>دخول بجوجل</button>
-      <input style={inp} placeholder="الإيميل" value={e} onChange={x => setE(x.target.value)} />
-      <input style={inp} type="password" placeholder="الباسورد" value={p} onChange={x => setP(x.target.value)} />
-      <button style={btn} onClick={() => go(false)}>دخول</button>{' '}
-      <button style={{ ...btn, background: '#555' }} onClick={() => go(true)}>حساب جديد</button>
-      <p style={{ color: 'crimson' }}>{m}</p>
+    <div className="login">
+      <div className="hero" style={{ marginTop: 0 }}><div className="bolt">⚡</div><h2>وكيل المولدات</h2></div>
+      <button className="gbtn" onClick={() => sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin } })}>دخول بجوجل</button>
+      <input placeholder="الإيميل" value={e} onChange={x => setE(x.target.value)} />
+      <input type="password" placeholder="الباسورد" value={p} onChange={x => setP(x.target.value)} />
+      <button className="pbtn" onClick={() => go(false)}>دخول</button>{' '}
+      <button className="pbtn" style={{ background: '#22304a', color: '#fff' }} onClick={() => go(true)}>حساب جديد</button>
+      <p style={{ color: '#f87171' }}>{m}</p>
     </div>
   )
 }
 
 function Chat({ s }) {
-  const [msgs, setMsgs] = useState([]), [t, setT] = useState(''), [files, setFiles] = useState([]), [busy, setBusy] = useState(false), [admin, setAdmin] = useState(false)
+  const [tab, setTab] = useState('chat'), [msgs, setMsgs] = useState([]), [t, setT] = useState(''), [files, setFiles] = useState([]), [busy, setBusy] = useState(false), [admin, setAdmin] = useState(false)
   const end = useRef()
   useEffect(() => { sb.from('profiles').select('role').eq('id', s.user.id).single().then(({ data }) => setAdmin(data?.role === 'admin')) }, [])
-  useEffect(() => { end.current?.scrollIntoView() }, [msgs])
+  useEffect(() => { end.current?.scrollIntoView() }, [msgs, tab])
 
-  const send = async () => {
-    if (busy || (!t && !files.length)) return
+  const send = async txt => {
+    const text = typeof txt === 'string' ? txt : t
+    if (busy || (!text && !files.length)) return
     setBusy(true)
     const images = []
     for (const [i, f] of files.entries()) {
@@ -49,7 +49,7 @@ function Chat({ s }) {
       const { error } = await sb.storage.from('generators').upload(path, f, { contentType: f.type })
       if (!error) images.push(sb.storage.from('generators').getPublicUrl(path).data.publicUrl)
     }
-    const next = [...msgs, { role: 'user', content: t || 'شوف الصور', images }]
+    const next = [...msgs, { role: 'user', content: text || 'شوف الصور', images }]
     setMsgs(next); setT(''); setFiles([])
     try {
       const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.access_token }, body: JSON.stringify({ messages: next }) })
@@ -59,31 +59,51 @@ function Chat({ s }) {
     setBusy(false)
   }
 
+  const re = /https?:\/\/\S+\.(jpg|jpeg|png|webp)/gi
   return (
-    <div style={{ maxWidth: 640, margin: '0 auto', padding: 12, paddingBottom: 110 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-        <b>⚡ وكيل المولدات</b>
+    <>
+      <div className="top">
+        <span className="logo">⚡ وكيل المولدات</span>
         <span>{admin && <a href="/admin" style={{ marginInlineEnd: 12 }}>لوحة التحكم</a>}<a href="#" onClick={() => sb.auth.signOut()}>خروج</a></span>
       </div>
-      {!msgs.length && <p style={{ color: '#666' }}>اكتبلي: «عايز مولد ٣٠ كيلو للإيجار في طنطا» أو «عندي مولد بيركنز للبيع» وابعت صوره.</p>}
-      {msgs.map((m, i) => {
-        const urls = m.role === 'user' ? m.images : (m.content.match(/https?:\/\/\S+\.(jpg|jpeg|png|webp)/gi) || [])
-        return (
-          <div key={i} style={{ background: m.role === 'user' ? '#d1fae5' : '#fff', padding: 10, borderRadius: 10, margin: '8px 0', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
-            {m.role === "user" ? m.content : m.content.replace(/https?:\/\/\S+\.(jpg|jpeg|png|webp)/gi, "")}
-            <div>{urls.map(u => <img key={u} src={u} style={{ width: 110, height: 110, objectFit: 'cover', borderRadius: 8, margin: 4 }} />)}</div>
+      {tab === 'gallery' ? <Gallery /> : (
+        <div className="wrap">
+          {!msgs.length && (
+            <div className="hero">
+              <div className="bolt">⚡</div>
+              <h2>أهلاً بيك</h2>
+              <div className="tag">دوّر على مولد أو تاور لايت، أو انزل إعلانك</div>
+              <div className="chips">
+                <button className="chip" onClick={() => setT('عايز مولد ')}>🔍 دوّر على مولد</button>
+                <button className="chip" onClick={() => send('عايز تاور لايت للايجار')}>💡 تاور لايت</button>
+                <button className="chip" onClick={() => send('انزل اعلان')}>📢 انزل إعلان</button>
+                <button className="chip" onClick={() => setT('احسب احمال  كيلو وات')}>📐 احسب القدرة</button>
+              </div>
+            </div>
+          )}
+          {msgs.map((m, i) => m.role === 'user'
+            ? <div key={i} className="u">{m.content}<div className="imgs">{m.images?.map(u => <img key={u} src={u} />)}</div></div>
+            : <div key={i} className="a">{m.content.replace(re, '')}<div className="imgs">{(m.content.match(re) || []).map(u => <img key={u} src={u} />)}</div></div>)}
+          {busy && <div className="a">بيكتب...</div>}
+          <div ref={end} />
+        </div>
+      )}
+      <div className="dock">
+        {tab === 'chat' && (
+          <div className="box">
+            {files.length > 0 && <div className="tag" style={{ marginBottom: 4 }}>📷 {files.length} صور مرفقة</div>}
+            <div className="inbox">
+              <label className="ic">📷<input type="file" accept="image/*" multiple hidden onChange={e => setFiles([...e.target.files])} /></label>
+              <input type="text" placeholder="اكتب هنا..." value={t} onChange={e => setT(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} />
+              <button className="send" onClick={send}>↑</button>
+            </div>
           </div>
-        )
-      })}
-      {busy && <p>⏳ بيكتب...</p>}
-      <div ref={end} />
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', padding: 10, borderTop: '1px solid #ddd' }}>
-        <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', gap: 6, alignItems: 'center' }}>
-          <label style={{ fontSize: 26 }}>📷<input type="file" accept="image/*" multiple hidden onChange={e => setFiles([...e.target.files])} /></label>
-          <input style={{ ...inp, marginBottom: 0 }} placeholder={files.length ? files.length + ' صور مرفقة...' : 'اكتب هنا'} value={t} onChange={e => setT(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} />
-          <button style={btn} onClick={send}>إرسال</button>
+        )}
+        <div className="nav">
+          <button className={tab === 'chat' ? 'on' : ''} onClick={() => setTab('chat')}>💬 المحادثة</button>
+          <button className={tab === 'gallery' ? 'on' : ''} onClick={() => setTab('gallery')}>🏭 المعرض</button>
         </div>
       </div>
-    </div>
+    </>
   )
 }

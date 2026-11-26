@@ -17,7 +17,7 @@ export default function Admin() {
     <div style={{ maxWidth: 700, margin: '0 auto', padding: 12 }}>
       <h3>👥 المستخدمين ({rows.length}) <a href="/" style={{ fontSize: 14 }}>رجوع</a></h3>
       {rows.map(r => (
-        <div key={r.id} style={{ background: '#fff', padding: 10, borderRadius: 8, margin: '6px 0' }}>
+        <div key={r.id} style={{ background: '#fff', color: '#111', padding: 10, borderRadius: 8, margin: '6px 0' }}>
           <div>{r.email} {r.role === 'admin' && '👑'} {r.banned && '🚫'}</div>
           <button onClick={() => upd(r.id, { banned: !r.banned })}>{r.banned ? 'فك الحظر' : 'حظر'}</button>{' '}
           <button onClick={() => upd(r.id, { role: r.role === 'admin' ? 'user' : 'admin' })}>{r.role === 'admin' ? 'شيل أدمن' : 'خليه أدمن'}</button>
