@@ -36,7 +36,13 @@ function Login() {
 function Chat({ s }) {
   const [tab, setTab] = useState('chat'), [msgs, setMsgs] = useState([]), [t, setT] = useState(''), [files, setFiles] = useState([]), [busy, setBusy] = useState(false), [admin, setAdmin] = useState(false)
   const end = useRef()
-  useEffect(() => { sb.from('profiles').select('role').eq('id', s.user.id).single().then(({ data }) => setAdmin(data?.role === 'admin')) }, [])
+  useEffect(() => {
+    sb.from('profiles').select('role').eq('id', s.user.id).single().then(({ data }) => {
+      const a = data?.role === 'admin'
+      setAdmin(a)
+      try { if (a && !sessionStorage.getItem('adminGo')) { sessionStorage.setItem('adminGo', '1'); location.href = '/admin' } } catch {}
+    })
+  }, [])
   useEffect(() => { end.current?.scrollIntoView() }, [msgs, tab])
 
   const send = async txt => {
@@ -59,12 +65,13 @@ function Chat({ s }) {
     setBusy(false)
   }
 
+  const logout = () => { try { sessionStorage.removeItem('adminGo') } catch {}; sb.auth.signOut() }
   const re = /https?:\/\/\S+\.(jpg|jpeg|png|webp)/gi
   return (
     <>
       <div className="top">
         <span className="logo">⚡ وكيل المولدات</span>
-        <span>{admin && <a href="/admin" style={{ marginInlineEnd: 12 }}>لوحة التحكم</a>}<a href="#" onClick={() => sb.auth.signOut()}>خروج</a></span>
+        <span>{admin && <a href="/admin" style={{ marginInlineEnd: 12 }}>لوحة التحكم</a>}<a href="#" onClick={logout}>خروج</a></span>
       </div>
       {tab === 'gallery' ? <Gallery /> : (
         <div className="wrap">
