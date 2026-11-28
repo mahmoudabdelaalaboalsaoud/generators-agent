@@ -66,6 +66,8 @@ function Chat({ s }) {
   }
 
   const logout = () => { try { sessionStorage.removeItem('adminGo') } catch {}; sb.auth.signOut() }
+  const lastA = [...msgs].reverse().find(m => m.role === 'assistant')?.content || ''
+  const quick = busy ? [] : lastA.includes('بيع ولا إيجار') ? ['بيع', 'إيجار'] : lastA.includes('القدرة كام كيلو') ? ['30 كيلو', '50 كيلو', '100 كيلو', '200 كيلو', '500 كيلو'] : lastA.includes('أنهي مدينة') ? ['القاهرة', 'الجيزة', 'الإسكندرية', 'طنطا', 'المنصورة'] : lastA.includes('«تأكيد»') ? ['تأكيد', 'إلغاء'] : []
   const re = /https?:\/\/\S+\.(jpg|jpeg|png|webp)/gi
   return (
     <>
@@ -91,13 +93,14 @@ function Chat({ s }) {
           {msgs.map((m, i) => m.role === 'user'
             ? <div key={i} className="u">{m.content}<div className="imgs">{m.images?.map(u => <img key={u} src={u} />)}</div></div>
             : <div key={i} className="a">{m.content.replace(re, '')}<div className="imgs">{(m.content.match(re) || []).map(u => <img key={u} src={u} />)}</div></div>)}
-          {busy && <div className="a">بيكتب...</div>}
+          {busy && <div className="a"><span className="dots"><i /><i /><i /></span></div>}
           <div ref={end} />
         </div>
       )}
       <div className="dock">
         {tab === 'chat' && (
           <div className="box">
+            {quick.length > 0 && <div className="chips qk">{quick.map(x => <button key={x} className="chip" onClick={() => send(x)}>{x}</button>)}</div>}
             {files.length > 0 && <div className="tag" style={{ marginBottom: 4 }}>📷 {files.length} صور مرفقة</div>}
             <div className="inbox">
               <label className="ic">📷<input type="file" accept="image/*" multiple hidden onChange={e => setFiles([...e.target.files])} /></label>
