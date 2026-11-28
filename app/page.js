@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { sb } from '../lib/supabase'
 import Gallery from './Gallery'
+import Settings from './Settings'
 
 export default function Home() {
   const [s, setS] = useState(null), [ready, setReady] = useState(false)
@@ -75,7 +76,7 @@ function Chat({ s }) {
         <span className="logo">⚡ وكيل المولدات</span>
         <span>{admin && <a href="/admin" style={{ marginInlineEnd: 12 }}>لوحة التحكم</a>}<a href="#" onClick={logout}>خروج</a></span>
       </div>
-      {tab === 'gallery' ? <Gallery /> : (
+      {tab === 'gallery' ? <Gallery /> : tab === 'settings' ? <Settings s={s} admin={admin} logout={logout} onMine={() => { setTab('chat'); send('اعلاناتي') }} /> : (
         <div className="wrap">
           {!msgs.length && (
             <div className="hero">
@@ -112,6 +113,8 @@ function Chat({ s }) {
         <div className="nav">
           <button className={tab === 'chat' ? 'on' : ''} onClick={() => setTab('chat')}>💬 المحادثة</button>
           <button className={tab === 'gallery' ? 'on' : ''} onClick={() => setTab('gallery')}>🏭 المعرض</button>
+          <button className={tab === 'settings' ? 'on' : ''} onClick={() => setTab('settings')}>⚙️ حسابي</button>
+          {admin && <button onClick={() => { location.href = '/admin' }}>📊 اللوحة</button>}
         </div>
       </div>
     </>

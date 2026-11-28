@@ -11,3 +11,7 @@
 .chip:active,.send:active{transform:scale(.96)}
 .card{transition:transform .15s}
 .card:active{transform:scale(.98)}
+.st-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
+.st-in{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px;margin:6px 0;outline:0;color:var(--txt)}
+.st-h{color:var(--mut);font-size:13px;margin-bottom:4px}
+.st-msg{background:#1b2740;border-radius:10px;padding:10px;margin-top:12px;cursor:pointer}
